@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohamed Reefan M — Quality Assurance & In-Process Inspection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1b2a;
+    --bg-alt:#0a1622;
+    --surface:#12253a;
+    --surface-2:#16304a;
+    --line:rgba(120,175,214,0.16);
+    --line-strong:rgba(120,175,214,0.32);
+    --text:#e9f1f7;
+    --muted:#8fa9c0;
+    --muted-dim:#5f7a92;
+    --accent:#ffcc00;
+    --accent-dim:#8a7300;
+    --accent-soft:rgba(255,204,0,0.12);
+    --pass:#4fd68c;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:44px 44px;
+    background-position:-1px -1px;
+  }
+  ::selection{background:var(--accent);color:#12253a;}
+  a{color:inherit;text-decoration:none;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- Caliper scroll gauge ---------- */
+  #gauge{
+    position:fixed; top:0; left:0; right:0; height:6px; z-index:1000;
+    background:var(--bg-alt); border-bottom:1px solid var(--line);
+  }
+  #gauge-fill{
+    height:100%; width:0%;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 2px, transparent 2px 6px);
+    transition:width .08s linear;
+  }
+
+  /* ---------- Nav / title block ---------- */
+  header{
+    position:fixed; top:6px; left:0; right:0; z-index:900;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 5vw;
+    backdrop-filter:blur(10px);
+    background:linear-gradient(180deg, rgba(13,27,42,0.9), rgba(13,27,42,0));
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.05rem; letter-spacing:.5px;
+  }
+  .brand .tag{
+    font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--accent);
+    border:1px solid var(--accent-dim); padding:2px 6px; border-radius:var(--radius);
+    letter-spacing:1px;
+  }
+  nav.links{display:flex; gap:28px;}
+  nav.links a{
+    font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted);
+    font-family:'JetBrains Mono',monospace; position:relative; padding-bottom:4px;
+    transition:color .25s;
+  }
+  nav.links a:hover{color:var(--accent);}
+  nav.links a::after{
+    content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--accent);
+    transition:width .25s;
+  }
+  nav.links a:hover::after{width:100%;}
+  #menu-btn{display:none; background:none; border:1px solid var(--line-strong); color:var(--text); width:38px;height:38px; border-radius:var(--radius); cursor:pointer; font-size:1.1rem;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    padding:120px 5vw 60px; position:relative;
+  }
+  .hero-eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--accent);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:22px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .hero-eyebrow .dash{width:36px; height:1px; background:var(--accent);}
+  h1.title{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(2.6rem, 7vw, 6rem); line-height:1.02; letter-spacing:-1px;
+    max-width:16ch;
+  }
+  h1.title .thin{font-weight:400; color:var(--muted);}
+  .hero-sub{
+    max-width:640px; margin-top:26px; color:var(--muted); font-size:1.05rem;
+  }
+  .hero-cta{display:flex; gap:16px; margin-top:40px; flex-wrap:wrap;}
+  .btn{
+    font-family:'JetBrains Mono',monospace; font-size:.82rem; letter-spacing:1px; text-transform:uppercase;
+    padding:14px 26px; border-radius:var(--radius); cursor:pointer; transition:all .25s; display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-solid{background:var(--accent); color:#12253a; font-weight:700; border:1px solid var(--accent);}
+  .btn-solid:hover{background:#ffe066; transform:translateY(-2px);}
+  .btn-outline{border:1px solid var(--line-strong); color:var(--text);}
+  .btn-outline:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-2px);}
+
+  /* readout strip */
+  .readouts{
+    display:flex; gap:0; margin-top:70px; border-top:1px solid var(--line); flex-wrap:wrap;
+  }
+  .readout{
+    flex:1; min-width:150px; padding:20px 22px; border-right:1px solid var(--line);
+  }
+  .readout:last-child{border-right:none;}
+  .readout .val{
+    font-family:'JetBrains Mono',monospace; font-size:1.8rem; color:var(--accent); font-weight:700;
+  }
+  .readout .lbl{font-size:.72rem; color:var(--muted-dim); text-transform:uppercase; letter-spacing:1.2px; margin-top:4px;}
+
+  /* caliper svg accent, top right of hero */
+  .caliper-wrap{position:absolute; top:130px; right:5vw; opacity:.75; width:min(340px,32vw);}
+  .caliper-wrap svg{width:100%; height:auto;}
+
+  /* ---------- Section shell ---------- */
+  section{padding:120px 5vw; position:relative; border-top:1px solid var(--line);}
+  .sheet-tag{
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--muted-dim);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:10px;
+  }
+  .sheet-tag .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;}
+  h2.h-title{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(1.8rem,4vw,2.8rem);
+    margin-bottom:20px; letter-spacing:-.5px;
+  }
+  .lede{color:var(--muted); max-width:680px; font-size:1.02rem; margin-bottom:50px;}
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- About / objective ---------- */
+  .about-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:60px;}
+  .about-grid p{color:var(--muted); margin-bottom:16px;}
+  .info-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:26px;
+  }
+  .info-card .row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed var(--line); font-family:'JetBrains Mono',monospace; font-size:.85rem;}
+  .info-card .row:last-child{border-bottom:none;}
+  .info-card .row span:first-child{color:var(--muted-dim); text-transform:uppercase; letter-spacing:1px; font-size:.7rem;}
+
+  /* ---------- Knowledge grid ---------- */
+  .card-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .know-card{
+    background:var(--surface); border:1px solid var(--line); padding:28px 24px; border-radius:var(--radius);
+    transition:border-color .3s, transform .3s;
+  }
+  .know-card:hover{border-color:var(--accent-dim); transform:translateY(-4px);}
+  .know-card .num{font-family:'JetBrains Mono',monospace; color:var(--accent-dim); font-size:.78rem; letter-spacing:1px;}
+  .know-card h3{font-family:'Space Grotesk',sans-serif; font-size:1.1rem; margin:12px 0 10px; font-weight:600;}
+  .know-card p{color:var(--muted); font-size:.92rem;}
+
+  /* ---------- Measurement / caliper interactive ---------- */
+  .instrument-panel{
+    display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center;
+  }
+  .caliper-demo{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:30px; position:relative;
+  }
+  .caliper-demo .readout-display{
+    font-family:'JetBrains Mono',monospace; background:#081119; border:1px solid var(--line-strong);
+    color:var(--accent); font-size:1.6rem; text-align:right; padding:12px 16px; border-radius:var(--radius); margin-bottom:20px;
+    letter-spacing:2px;
+  }
+  .instr-list{list-style:none;}
+  .instr-list li{
+    display:flex; gap:14px; padding:16px 0; border-bottom:1px solid var(--line); align-items:flex-start;
+  }
+  .instr-list li:last-child{border-bottom:none;}
+  .instr-list .icon{
+    width:38px;height:38px;flex-shrink:0; border:1px solid var(--line-strong); border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:.8rem;
+  }
+  .instr-list h4{font-family:'Space Grotesk',sans-serif; font-size:1rem; margin-bottom:4px; font-weight:600;}
+  .instr-list p{color:var(--muted); font-size:.9rem;}
+
+  /* ---------- Profile image ---------- */
+  .profile-image{
+    width:200px; height:240px; border-radius:8px; 
+    border:3px solid var(--accent); box-shadow:0 8px 32px rgba(255,204,0,0.15);
+    object-fit:cover; margin:0 30px 0 0; display:inline-block; vertical-align:top;
+  }
+  .hero-header{
+    display:flex; align-items:flex-start; gap:0; margin-bottom:20px;
+  }
+
+  /* ---------- Org profile ---------- */
+  .org-card{
+    background:linear-gradient(135deg, var(--surface), var(--surface-2));
+    border:1px solid var(--line); border-radius:var(--radius); padding:44px; position:relative; overflow:hidden;
+  }
+  .org-card::before{
+    content:'HANON'; position:absolute; right:-10px; bottom:-40px; font-family:'Space Grotesk',sans-serif;
+    font-size:9rem; font-weight:700; color:rgba(255,255,255,0.02); letter-spacing:-4px; pointer-events:none;
+  }
+  .org-tags{display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;}
+  .org-tags span{
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; border:1px solid var(--line-strong);
+    padding:6px 12px; border-radius:20px; color:var(--muted); letter-spacing:.5px;
+  }
+
+  /* ---------- Timeline (education / experience) ---------- */
+  .timeline{position:relative; padding-left:36px;}
+  .timeline::before{content:''; position:absolute; left:6px; top:6px; bottom:6px; width:1px; background:var(--line-strong);}
+  .tl-item{position:relative; padding-bottom:44px;}
+  .tl-item:last-child{padding-bottom:0;}
+  .tl-item::before{
+    content:''; position:absolute; left:-36px; top:4px; width:13px; height:13px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--accent);
+  }
+  .tl-item .period{font-family:'JetBrains Mono',monospace; font-size:.75rem; color:var(--accent); letter-spacing:1px; text-transform:uppercase;}
+  .tl-item h4{font-family:'Space Grotesk',sans-serif; font-size:1.15rem; margin:6px 0 6px; font-weight:600;}
+  .tl-item p{color:var(--muted); font-size:.93rem; max-width:560px;}
+  .tl-item .stamp{
+    display:inline-block; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:1.5px;
+    color:var(--pass); border:1px solid var(--pass); padding:4px 10px; border-radius:2px; text-transform:uppercase;
+  }
+
+  /* two column split for edu/exp */
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:70px;}
+  .split h3.sub{font-family:'JetBrains Mono',monospace; font-size:.85rem; color:var(--muted-dim); text-transform:uppercase; letter-spacing:2px; margin-bottom:30px;}
+
+  /* ---------- Skills tags ---------- */
+  .skill-cloud{display:flex; flex-wrap:wrap; gap:14px;}
+  .skill-pill{
+    font-family:'JetBrains Mono',monospace; font-size:.85rem; padding:12px 20px; border:1px solid var(--line-strong);
+    border-radius:var(--radius); color:var(--text); transition:all .25s; cursor:default;
+  }
+  .skill-pill:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+
+  /* ---------- Contact ---------- */
+  .contact-wrap{
+    display:grid; grid-template-columns:1.1fr .9fr; gap:60px; align-items:center;
+  }
+  .stamp-box{
+    border:2px solid var(--accent); border-radius:var(--radius); padding:34px; text-align:center;
+    transform:rotate(-2deg); position:relative;
+  }
+  .stamp-box .top{font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:.75rem; letter-spacing:3px;}
+  .stamp-box .big{font-family:'Space Grotesk',sans-serif; font-size:2.4rem; font-weight:700; color:var(--accent); margin:8px 0;}
+  .stamp-box .bottom{font-family:'JetBrains Mono',monospace; color:var(--muted); font-size:.7rem; letter-spacing:2px;}
+  .contact-list a, .contact-list div{
+    display:flex; align-items:center; gap:16px; padding:20px 0; border-bottom:1px solid var(--line);
+    font-family:'JetBrains Mono',monospace; font-size:1rem; transition:color .25s;
+  }
+  .contact-list a:hover{color:var(--accent);}
+  .contact-list .k{color:var(--muted-dim); font-size:.68rem; text-transform:uppercase; letter-spacing:1.5px; min-width:90px;}
+
+  footer{padding:30px 5vw; text-align:center; color:var(--muted-dim); font-family:'JetBrains Mono',monospace; font-size:.75rem; border-top:1px solid var(--line);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    nav.links{display:none;}
+    #menu-btn{display:block;}
+    .about-grid,.instrument-panel,.split,.contact-wrap{grid-template-columns:1fr; gap:34px;}
+    .card-grid{grid-template-columns:1fr 1fr;}
+    .caliper-wrap{display:none;}
+    section{padding:90px 6vw;}
+  }
+  @media (max-width:560px){
+    .card-grid{grid-template-columns:1fr;}
+    .readouts{flex-direction:column;}
+    .readout{border-right:none; border-bottom:1px solid var(--line);}
+    .hero{padding-top:140px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+    .reveal{opacity:1; transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="gauge"><div id="gauge-fill"></div></div>
+
+<header>
+  <div class="brand">MR <span class="tag">QA · INSPECTION</span></div>
+  <nav class="links">
+    <a href="#about">Objective</a>
+    <a href="#knowledge">Knowledge</a>
+    <a href="#instruments">Instruments</a>
+    <a href="#organization">Company</a>
+    <a href="#background">Background</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button id="menu-btn">☰</button>
+</header>
+
+<!-- mobile nav overlay -->
+<div id="mobile-nav" style="display:none; position:fixed; inset:0; background:#0a1622ee; z-index:950; flex-direction:column; align-items:center; justify-content:center; gap:30px;">
+  <a href="#about" class="mnav-link">Objective</a>
+  <a href="#knowledge" class="mnav-link">Knowledge</a>
+  <a href="#instruments" class="mnav-link">Instruments</a>
+  <a href="#organization" class="mnav-link">Company</a>
+  <a href="#background" class="mnav-link">Background</a>
+  <a href="#contact" class="mnav-link">Contact</a>
+</div>
+
+<section class="hero" id="home">
+  <div class="hero-eyebrow"><span class="dash"></span> IN-PROCESS QUALITY · METALLURGY · MANUFACTURING</div>
+  <div class="hero-header">
+    <img src="profile.png" alt="Mohamed Reefan M - Quality Assurance Professional" class="profile-image">
+    <h1 class="title">MOHAMED<br><span class="thin">REEFAN</span> M</h1>
+  </div>
+  <p class="hero-sub">A manufacturing quality professional who reads a drawing, a PFMEA, and a caliper the same fluent way — one year of In-Process Quality at Hanon Systems, backed by six months in metallurgical lab testing at SFC Solutions, Ford Plant.</p>
+  <div class="hero-cta">
+    <a href="#contact" class="btn btn-solid">Get In Touch →</a>
+    <a href="#background" class="btn btn-outline">View Experience</a>
+  </div>
+
+  <div class="caliper-wrap">
+    <svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="60" width="300" height="8" fill="none" stroke="#8fa9c0" stroke-width="1"/>
+      <g stroke="#5f7a92" stroke-width="1">
+        <line x1="10" y1="60" x2="10" y2="40"/>
+        <line x1="40" y1="60" x2="40" y2="48"/>
+        <line x1="70" y1="60" x2="70" y2="40"/>
+        <line x1="100" y1="60" x2="100" y2="48"/>
+        <line x1="130" y1="60" x2="130" y2="40"/>
+        <line x1="160" y1="60" x2="160" y2="48"/>
+        <line x1="190" y1="60" x2="190" y2="40"/>
+        <line x1="220" y1="60" x2="220" y2="48"/>
+        <line x1="250" y1="60" x2="250" y2="40"/>
+        <line x1="280" y1="60" x2="280" y2="48"/>
+        <line x1="310" y1="60" x2="310" y2="40"/>
+      </g>
+      <path d="M195 30 L195 100 L215 100 L215 130 L235 130 L235 68 L310 68 L310 60 L235 60 L235 30 Z" fill="none" stroke="#ffcc00" stroke-width="1.6"/>
+      <text x="200" y="24" fill="#ffcc00" font-family="JetBrains Mono, monospace" font-size="11">12.65 mm</text>
+    </svg>
+  </div>
+
+  <div class="readouts">
+    <div class="readout"><div class="val">1+</div><div class="lbl">Year — In-Process QA</div></div>
+    <div class="readout"><div class="val">6</div><div class="lbl">Months — Metallurgy Lab</div></div>
+    <div class="readout"><div class="val">7</div><div class="lbl">QC Tools Applied</div></div>
+    <div class="readout"><div class="val">±0.01</div><div class="lbl">mm Measurement Accuracy</div></div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 01 — CAREER OBJECTIVE</div>
+  <h2 class="h-title reveal">Built for the shop floor, precise on the drawing.</h2>
+  <div class="about-grid">
+    <div class="reveal">
+      <p>Seeking a challenging position in a manufacturing organization where quality assurance, inspection, and problem-solving skills can be put to work ensuring product quality and process excellence.</p>
+      <p>Focused on contributing to continuous improvement initiatives by applying quality tools, process audits, measurement instruments, and manufacturing quality systems — supporting organizational growth and customer satisfaction.</p>
+    </div>
+    <div class="info-card reveal">
+      <div class="row"><span>Phone</span><span>8610225449</span></div>
+      <div class="row"><span>Email</span><span>reefanmohammed@gmail.com</span></div>
+      <div class="row"><span>Role focus</span><span>In-Process Quality</span></div>
+      <div class="row"><span>Location</span><span>Karaikal, India</span></div>
+      <div class="row"><span>Status</span><span style="color:var(--pass)">Open to opportunities</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="knowledge">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 02 — KNOWLEDGE GAINED</div>
+  <h2 class="h-title reveal">Career summary &amp; what it's built.</h2>
+  <p class="lede reveal">Motivated manufacturing professional with hands-on time across in-process inspection and metallurgical testing — and a working grasp of the documents and tools that keep a production line in control.</p>
+  <div class="card-grid">
+    <div class="know-card reveal">
+      <div class="num">01 / 7QC</div>
+      <h3>7 QC Tools</h3>
+      <p>Comprehensive knowledge of the 7 QC Tools and their application in quality improvement and structured problem-solving activities.</p>
+    </div>
+    <div class="know-card reveal">
+      <div class="num">02 / DOCS</div>
+      <h3>Drawing → PFD → PFMEA → CP → MOS</h3>
+      <p>Strong understanding of the linkage between Drawing, Process Flow Diagram, PFMEA, Control Plan, MOS, and Line Check Sheets.</p>
+    </div>
+    <div class="know-card reveal">
+      <div class="num">03 / AUDIT</div>
+      <h3>Internal CP Audit</h3>
+      <p>Capable of conducting Internal Control Plan Audits independently across all commodities at Hanon Systems.</p>
+    </div>
+  </div>
+</section>
+
+<section id="instruments">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 03 — MEASUREMENT &amp; INSPECTION</div>
+  <h2 class="h-title reveal">Reads instruments, not just documents.</h2>
+  <div class="instrument-panel">
+    <div class="caliper-demo reveal">
+      <div class="readout-display" id="digital-readout">00.00 mm</div>
+      <svg viewBox="0 0 300 90" width="100%" height="auto">
+        <rect x="0" y="40" width="300" height="6" fill="none" stroke="#5f7a92"/>
+        <g stroke="#3c5468" stroke-width="1">
+          <line x1="0" y1="40" x2="0" y2="20"/><line x1="30" y1="40" x2="30" y2="28"/>
+          <line x1="60" y1="40" x2="60" y2="20"/><line x1="90" y1="40" x2="90" y2="28"/>
+          <line x1="120" y1="40" x2="120" y2="20"/><line x1="150" y1="40" x2="150" y2="28"/>
+          <line x1="180" y1="40" x2="180" y2="20"/><line x1="210" y1="40" x2="210" y2="28"/>
+          <line x1="240" y1="40" x2="240" y2="20"/><line x1="270" y1="40" x2="270" y2="28"/>
+          <line x1="300" y1="40" x2="300" y2="20"/>
+        </g>
+        <rect id="jaw" x="180" y="10" width="4" height="70" fill="#ffcc00"/>
+      </svg>
+      <input id="slider" type="range" min="0" max="300" value="180" style="width:100%; margin-top:14px; accent-color:#ffcc00;">
+      <p style="color:var(--muted-dim); font-size:.75rem; margin-top:10px; font-family:'JetBrains Mono',monospace;">↳ drag to move the jaw — dimensional inspection, simplified.</p>
+    </div>
+    <ul class="instr-list reveal">
+      <li><div class="icon">VC</div><div><h4>Vernier Caliper</h4><p>Precision dimensional inspection and quality verification on production parts.</p></div></li>
+      <li><div class="icon">MIC</div><div><h4>Micrometer</h4><p>Fine-tolerance measurement for critical dimensions during in-process checks.</p></div></li>
+      <li><div class="icon">HG</div><div><h4>Height Gauge</h4><p>Vertical dimension and step-height verification across component families.</p></div></li>
+      <li><div class="icon">CAL</div><div><h4>Calibration Awareness</h4><p>Instrument care and calibration best practices to maintain inspection accuracy.</p></div></li>
+    </ul>
+  </div>
+</section>
+
+<section id="organization">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 04 — CURRENT ORGANIZATION</div>
+  <h2 class="h-title reveal">Hanon Systems</h2>
+  <div class="org-card reveal">
+    <p style="color:var(--muted); max-width:620px; position:relative; z-index:1;">A global automotive thermal management solutions company specializing in HVAC, powertrain cooling, compressor, fluid transport, and electrification products. Hanon Systems supplies thermal management systems and components to leading automobile manufacturers worldwide, with a focus on quality, innovation, and sustainable mobility.</p>
+    <div class="org-tags" style="position:relative; z-index:1;">
+      <span>HVAC Systems</span><span>Powertrain Cooling</span><span>Compressors</span><span>Fluid Transport</span><span>Electrification</span>
+    </div>
+  </div>
+</section>
+
+<section id="background">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 05 — EDUCATION &amp; EXPERIENCE</div>
+  <h2 class="h-title reveal">Background</h2>
+  <div class="split">
+    <div>
+      <h3 class="sub reveal">Education History</h3>
+      <div class="timeline reveal">
+        <div class="tl-item">
+          <div class="period">2024</div>
+          <h4>Master of Computer Applications (MCA)</h4>
+          <p>Pondicherry University, Karaikal — CGPA 5.33 / 10</p>
+        </div>
+        <div class="tl-item">
+          <div class="period">2022</div>
+          <h4>Bachelor of Computer Applications (BCA)</h4>
+          <p>EGS Pillay Arts and Science College, Nagapattinam — CGPA 7.75 / 10</p>
+        </div>
+        <div class="tl-item">
+          <div class="period">S.S.L.C.</div>
+          <h4>Secondary School Leaving Certificate</h4>
+          <p>Passed with 67% marks.</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 class="sub reveal">Work Experience</h3>
+      <div class="timeline reveal">
+        <div class="tl-item">
+          <div class="period">Current</div>
+          <h4>In-Process Quality</h4>
+          <p>Hanon Systems — inspection, internal CP audits, and process quality checks across commodities.</p>
+          <span class="stamp">✓ 1 Year</span>
+        </div>
+        <div class="tl-item">
+          <div class="period">Past</div>
+          <h4>Metallurgy Laboratory</h4>
+          <p>SFC Solutions, Ford Plant, Chengalpattu — material testing, molding checks, welding inspections, metallurgical analysis, and quality assurance activities.</p>
+          <span class="stamp">✓ 6 Months</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 06 — CORE SKILLS</div>
+  <h2 class="h-title reveal">Beyond the gauge.</h2>
+  <div class="skill-cloud reveal">
+    <span class="skill-pill">Communication</span>
+    <span class="skill-pill">Problem Solving</span>
+    <span class="skill-pill">Time Management</span>
+    <span class="skill-pill">Team Work</span>
+    <span class="skill-pill">Data Analysis</span>
+    <span class="skill-pill">Process Auditing</span>
+    <span class="skill-pill">Dimensional Inspection</span>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="sheet-tag"><span class="dot"></span> SHEET 07 — CONTACT</div>
+  <h2 class="h-title reveal">Let's talk quality.</h2>
+  <div class="contact-wrap">
+    <div class="contact-list reveal">
+      <a href="tel:+918610225449"><span class="k">Phone</span> +91 86102 25449</a>
+      <a href="mailto:reefanmohammed@gmail.com"><span class="k">Email</span> reefanmohammed@gmail.com</a>
+      <div><span class="k">Location</span> Karaikal, Puducherry, India</div>
+    </div>
+    <div class="stamp-box reveal">
+      <div class="top">QUALITY ASSURED</div>
+      <div class="big">PASS</div>
+      <div class="bottom">MOHAMED REEFAN M · INSPECTED &amp; APPROVED</div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 Mohamed Reefan M. In-Process Quality · Metallurgy · Manufacturing Excellence.</footer>
+
+<script>
+  // scroll gauge
+  const fill = document.getElementById('gauge-fill');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    fill.style.width = pct + '%';
+  });
+
+  // reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, {threshold: 0.15});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // mobile nav
+  const menuBtn = document.getElementById('menu-btn');
+  const mnav = document.getElementById('mobile-nav');
+  menuBtn.addEventListener('click', () => {
+    mnav.style.display = mnav.style.display === 'flex' ? 'none' : 'flex';
+  });
+  document.querySelectorAll('.mnav-link').forEach(a => {
+    a.style.fontFamily = "'Space Grotesk', sans-serif";
+    a.style.fontSize = '1.4rem';
+    a.addEventListener('click', () => mnav.style.display = 'none');
+  });
+
+  // caliper interactive demo
+  const slider = document.getElementById('slider');
+  const jaw = document.getElementById('jaw');
+  const readout = document.getElementById('digital-readout');
+  slider.addEventListener('input', () => {
+    const v = slider.value;
+    jaw.setAttribute('x', v);
+    const mm = (v / 300 * 50).toFixed(2);
+    readout.textContent = mm.padStart(5,'0') + ' mm';
+  });
+</script>
+
+</body>
+</html>
